@@ -1,8 +1,9 @@
-<html>
-    <head>
-        <title>{{ title }} -  Bazart</title>
-    </head>
-    <body>
-        <h1>Hello {{ user.name }}, the {{ user.power }} !</h1>
-    </body>
-</html>
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Hi, {{ user.username }}, the {{ user.power }}!</h1>
+    {% for post in posts %}
+    <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
+    <hr>
+    {% endfor %}
+{% endblock%}
+
