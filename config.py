@@ -7,7 +7,7 @@ class Config(object):
     TESTING = False
     CSRF_ENABLED = True
     SECRET_KEY = os.environ.get("SECRET_KEY") or "The eleventh metal"
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or "postgresql://localhost:5432/swabook_db1"
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or "postgresql:///SwaBook"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
