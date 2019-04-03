@@ -107,7 +107,7 @@ def user(username):
 @login_required
 def edit_profile():
     
-    form = EditProfileForm()
+    form = EditProfileForm(current_user.username)
 
     if( request.method == 'GET'):
 
