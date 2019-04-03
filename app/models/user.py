@@ -29,7 +29,7 @@ class User(UserMixin, db.Model):
 
   def avatar(self, size):
     digest = md5(self.email.lower().encode('utf-8')).hexdigest()
-    gravatar = 'https://www.gravatar.com/avatar/{}?d=wavatar&s={}'.format(digest,size)
+    gravatar = 'https://www.gravatar.com/avatar/{}?d=robohash&s={}'.format(digest,size)
     return gravatar
 
   def __repr__(self):

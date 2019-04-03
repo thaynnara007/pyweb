@@ -2,8 +2,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-class Config(object):
-    DEBUG = False
+class Config(object): 
     TESTING = False
     CSRF_ENABLED = True
     SECRET_KEY = os.environ.get("SECRET_KEY") or "The eleventh metal"
