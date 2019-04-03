@@ -94,4 +94,4 @@ def user(username):
         'body': 'Lets resolve this with a discussion'
     }
     ]
-    return render_template('user.html', user=user, posts=posts)
+    return render_template('user.html', title='profile',user=user, posts=posts)
