@@ -1,6 +1,7 @@
 from app import db
 from app import login
 from hashlib import md5
+from app.models import Post
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -42,6 +43,21 @@ class User(UserMixin, db.Model):
     digest = md5(self.email.lower().encode('utf-8')).hexdigest()
     gravatar = 'https://www.gravatar.com/avatar/{}?d=robohash&s={}'.format(digest,size)
     return gravatar
+  
+  def is_following(self, other_user):
+    return self.followed.filter(
+      followers.c.followed_id == other_user.id).count() > 0
+
+  def follow(self, other_user):
+    if(not self.is_following(other_user)): self.followed.append(other_user)
+  
+  def unfollow(self, other_user):
+    if(self.is_following(other_user)): self.followed.remove(other_user)
+  
+  def get_followed_posts(self):
+    return Post.query.join(
+      followers, (followers.c.followed_id == Post.user_id)).filter(
+        followers.c.follower_id == self.id).order_by(Post.timestamp.desc())
 
   def __repr__(self):
     return '<User {}>'.format(self.username)   
