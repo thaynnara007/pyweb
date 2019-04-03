@@ -1,6 +1,7 @@
 from app import db
 from app import app
 from flask import request
+from datetime import datetime
 from app.forms import LoginForm
 from app.models.user import User
 from werkzeug.urls import url_parse
@@ -10,6 +11,12 @@ from flask_login import login_required
 from flask_login import current_user, login_user
 from flask import render_template, flash, redirect, url_for
 
+
+@app.before_request
+def before_rquest():
+    if (current_user.is_authenticated):
+        current_user.last_seen = datetime.utcnow()
+        db.session.commit()
 
 @app.route('/')
 @app.route('/index')
@@ -81,7 +88,6 @@ def register():
     return render_template('register.html', title="Register", form=form)
 
 @app.route('/user/<username>')
-@login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     posts = [
