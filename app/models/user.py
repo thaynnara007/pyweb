@@ -1,7 +1,7 @@
 from app import db
 from app import login
 from hashlib import md5
-from app.models import Post
+from app.models.post import Post
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -32,6 +32,10 @@ class User(UserMixin, db.Model):
     secondaryjoin=(followers.c.followed_id == id),
     backref=db.backref('followers', lazy='dynamic',), lazy='dynamic'
     )
+  
+  def __init__(self, username, email):
+    self.username = username
+    self.email = email
 
   def set_password(self, password):
     self.password_hash = generate_password_hash(password)
@@ -55,9 +59,12 @@ class User(UserMixin, db.Model):
     if(self.is_following(other_user)): self.followed.remove(other_user)
   
   def get_followed_posts(self):
-    return Post.query.join(
+    followed_posts = Post.query.join(
       followers, (followers.c.followed_id == Post.user_id)).filter(
-        followers.c.follower_id == self.id).order_by(Post.timestamp.desc())
+        followers.c.follower_id == self.id)
+    own_posts = Post.query.filter_by(user_id = self.id)
+
+    return followed_posts.union(own_posts).order_by(Post.timestamp.desc())
 
   def __repr__(self):
     return '<User {}>'.format(self.username)   
