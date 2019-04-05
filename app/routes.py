@@ -4,13 +4,13 @@ from flask import request
 from datetime import datetime
 from app.forms import LoginForm
 from app.models.user import User
+from app.models.post import Post
 from werkzeug.urls import url_parse
 from flask_login import logout_user
-from app.forms import EditProfileForm
-from app.forms import RegistrationForm
 from flask_login import login_required
 from flask_login import current_user, login_user
 from flask import render_template, flash, redirect, url_for
+from app.forms import EditProfileForm, RegistrationForm, PostForm
 
 
 @app.before_request
@@ -19,23 +19,33 @@ def before_rquest():
         current_user.last_seen = datetime.utcnow()
         db.session.commit()
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    user = {"username" : "Vin", "power" : "Mistborn"}
+    form = PostForm()
+
+    if( form.validate_on_submit()):
+        body = form.post.data
+        post = Post(body=body, author=current_user)
+
+        db.session.add(post)
+        db.session.commit()
+
+        flash('Your post is now online')
+        return redirect(url_for('index'))
+
     posts = [
         {
-            'author':{"username":"Kelsier"},
-            'body': "Let's defeat the Lord Ruler!",
+            'author': {'username': 'John'},
+            'body': 'Ba!'
         },
         {
-            'author':{'username':'Elend'},
-            'body': 'Lets resolve this with a discussion'
+            'author': {'username': 'Susan'},
+            'body': 'BU!'
         }
     ]
-
-    return render_template('index.html', title='Home', posts=posts)
+    return render_template('index.html', title='Home', posts=posts, form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
