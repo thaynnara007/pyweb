@@ -89,6 +89,7 @@ def register():
     return render_template('register.html', title="Register", form=form)
 
 @app.route('/<username>')
+@login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     posts = [
@@ -129,38 +130,38 @@ def edit_profile():
 
 @app.route('/follow/<username>')
 @login_required
-def follow(other_user):
-    user = User.query.filter_by(username=other_user).first()
+def follow(username):
+    user = User.query.filter_by(username=username).first()
 
     if (user is None): 
-        flash('User {} not found'.format(other_user))
+        flash('User {} not found'.format(username))
         return redirect(url_for('index'))
 
-    elif (other_user == current_user):
+    elif (username == current_user):
         flash('You cannot follow yourself!')
         return redirect(url_for('index'))
     else:
-        current_user.follow(other_user)
+        current_user.follow(user)
         db.session.commit()
 
-        flash('You are following {}'.format(other_user))
-        return redirect(url_for('user', username=other_user))
+        flash('You are following {}'.format(username))
+        return redirect(url_for('user', username=username))
 
 @app.route('/unfollow/<username>')
 @login_required
-def unfollow(other_user):
-    user = User.query.filter_by(username=other_user).first()
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
 
     if(user is None):
-        flash('User {} not found'.format(other_user))
+        flash('User {} not found'.format(username))
         return redirect(url_for('index'))
     
     elif(user == current_user):
         flash('You were not even following yourself!')
-        return redirect(url_for('user', username=other_user))
+        return redirect(url_for('user', username=username))
     else:
-        current_user.unfollow(other_user)
+        current_user.unfollow(user)
         db.session.commit()
 
-        flash('You are not following {}'.format(other_user))
-        redirect(url_for('user', username=other_user))
+        flash('You are not following {}'.format(username))
+        return redirect(url_for('user', username=username))
