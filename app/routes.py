@@ -12,7 +12,6 @@ from flask_login import current_user, login_user
 from flask import render_template, flash, redirect, url_for
 from app.forms import EditProfileForm, RegistrationForm, PostForm
 
-
 @app.before_request
 def before_rquest():
     if (current_user.is_authenticated):
@@ -35,9 +34,19 @@ def index():
         flash('Your post is now online')
         return redirect(url_for('index'))
 
-    posts = current_user.get_followed_posts().all()
+    page = request.args.get('page',1, type=int)
+    posts = current_user.get_followed_posts().paginate(
+        page, app.config["POSTS_PER_PAGE"], False)
+    
+    if (posts.has_next): next_url = url_for('index', page=posts.next_num)
+    else: next_url = None
+    
+    if (posts.has_prev): prev_url = url_for('index', page=posts.prev_num)
+    else: prev_url = None
 
-    return render_template('index.html', title='Home Page', posts=posts, form=form)
+    return render_template(
+        'index.html', title='Home Page', posts=posts.items, 
+        form=form, next_url=next_url, prev_url=prev_url)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -90,21 +99,25 @@ def register():
     
     return render_template('register.html', title="Register", form=form)
 
-@app.route('/<username>')
+@app.route('/user/<username>')
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    posts = [
-    {
-        'author': user,
-        'body': "Let's defeat the Lord Ruler!",
-    },
-    {
-        'author': user,
-        'body': 'Lets resolve this with a discussion'
-    }
-    ]
-    return render_template('user.html', title='profile',user=user, posts=posts)
+    page = request.args.get('page', 1, type=int)
+    posts = user.posts.order_by(Post.timestamp.desc()).paginate(
+        page, app.config['POSTS_PER_PAGE'], False)
+
+    if (posts.has_next): next_url = url_for('user', username=user.username ,page=posts.next_num)
+    else: next_url = None
+    
+    if (posts.has_prev): prev_url = url_for('user',  username=user.username, page=posts.prev_num)
+    else: prev_url = None    
+
+
+    return render_template(
+        'user.html', title='profile',user=user, posts=posts.items,
+        next_url=next_url, prev_url=prev_url
+        )
 
 @app.route('/edit_profile', methods=['GET','POST'])
 @login_required
@@ -171,5 +184,17 @@ def unfollow(username):
 @app.route('/explore')
 @login_required
 def explore():
-    all_posts = Post.query.order_by(Post.timestamp.desc()).all()
-    return render_template('index.html', title="Explore", posts=posts)
+    page = request.args.get('page',1,type=int)
+    all_posts = Post.query.order_by(Post.timestamp.desc()).paginate(
+        page, app.config['POSTS_PER_PAGE'], False)
+    
+    if (all_posts.has_next): next_url = url_for('explore', page=all_posts.next_num)
+    else: next_url = None
+    
+    if (all_posts.has_prev): prev_url = url_for('explore', page=all_posts.prev_num)
+    else: prev_url = None
+
+    return render_template(
+        'index.html', title="Explore", posts=all_posts.items,
+        next_url=next_url, prev_url=prev_url
+        )
