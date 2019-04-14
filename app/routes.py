@@ -35,17 +35,9 @@ def index():
         flash('Your post is now online')
         return redirect(url_for('index'))
 
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'Ba!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'BU!'
-        }
-    ]
-    return render_template('index.html', title='Home', posts=posts, form=form)
+    posts = current_user.get_followed_posts().all()
+
+    return render_template('index.html', title='Home Page', posts=posts, form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -175,3 +167,9 @@ def unfollow(username):
 
         flash('You are not following {}'.format(username))
         return redirect(url_for('user', username=username))
+
+@app.route('/explore')
+@login_required
+def explore():
+    all_posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', title="Explore", posts=posts)
